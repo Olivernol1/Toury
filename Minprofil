@@ -1,0 +1,502 @@
+
+import React, { useState, useEffect } from "react";
+import { User } from "@/entities/User";
+import { Guide } from "@/entities/Guide";
+import { Review } from "@/entities/Review";
+import { UploadFile } from "@/integrations/Core";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { 
+  User as UserIcon, 
+  Edit, 
+  Save, 
+  Camera, 
+  Star,
+  MapPin,
+  Headphones,
+  MessageSquare,
+  Award,
+  Settings,
+  LogOut
+} from "lucide-react";
+import { motion } from "framer-motion";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import { Link } from "react-router-dom"; // Added Link import
+
+// Helper function to create page URLs
+const createPageUrl = (pageName) => {
+  switch (pageName) {
+    case "Policy":
+      return "/policy"; // Assuming your policy page is at /policy
+    // Add other page mappings as needed
+    default:
+      return `/${pageName.toLowerCase()}`;
+  }
+};
+
+export default function MinProfil() {
+  const [user, setUser] = useState(null);
+  const [myGuides, setMyGuides] = useState([]);
+  const [myReviews, setMyReviews] = useState([]);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
+
+  const [editData, setEditData] = useState({
+    full_name: "",
+    bio: "",
+    location: "",
+    interests: "",
+    profile_picture: ""
+  });
+
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
+  const loadUserData = async () => {
+    try {
+      const currentUser = await User.me();
+      setUser(currentUser);
+      setEditData({
+        full_name: currentUser.full_name || "",
+        bio: currentUser.bio || "",
+        location: currentUser.location || "",
+        interests: currentUser.interests || "",
+        profile_picture: currentUser.profile_picture || ""
+      });
+
+      // Load user's guides and reviews
+      const [allGuides, allReviews] = await Promise.all([
+        Guide.list(),
+        Review.list()
+      ]);
+
+      const userGuides = allGuides.filter(guide => guide.created_by === currentUser.email);
+      const userReviews = allReviews.filter(review => review.created_by === currentUser.email);
+
+      setMyGuides(userGuides);
+      setMyReviews(userReviews);
+    } catch (error) {
+      setError("Kunde inte ladda profil. Logga in för att se din profil.");
+      console.error("Error loading user:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      await User.updateMyUserData(editData);
+      await loadUserData();
+      setIsEditing(false);
+      setSuccess("Profil uppdaterad!");
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (error) {
+      setError("Kunde inte uppdatera profilen. Försök igen.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleImageUpload = async (file) => {
+    try {
+      const { file_url } = await UploadFile({ file });
+      setEditData(prev => ({ ...prev, profile_picture: file_url }));
+    } catch (error) {
+      setError("Kunde inte ladda upp bild.");
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await User.logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen p-6 md:p-12">
+        <div className="max-w-4xl mx-auto animate-pulse">
+          <div className="h-32 bg-gray-200 rounded-2xl mb-6"></div>
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="h-96 bg-gray-200 rounded-xl"></div>
+            <div className="md:col-span-2 h-96 bg-gray-200 rounded-xl"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <Card className="max-w-md w-full text-center">
+          <CardContent className="p-8">
+            <UserIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Logga in</h2>
+            <p className="text-gray-600 mb-6">
+              Du måste logga in för att se din profil
+            </p>
+            <Button 
+              onClick={() => User.login()}
+              className="w-full bg-gradient-to-r from-blue-600 to-blue-700"
+            >
+              Logga in med Google
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen p-6 md:p-12">
+      <div className="max-w-6xl mx-auto">
+        {/* Success/Error Messages */}
+        {success && (
+          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
+            <Alert className="mb-6 border-green-200 bg-green-50">
+              <AlertDescription className="text-green-800">{success}</AlertDescription>
+            </Alert>
+          </motion.div>
+        )}
+
+        {error && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        {/* Profile Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <Card className="bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700 border-0 shadow-2xl text-white mb-8">
+            <CardContent className="p-8">
+              <div className="flex flex-col md:flex-row items-center gap-6">
+                <div className="relative">
+                  <div className="w-24 h-24 rounded-full overflow-hidden bg-white/20 flex items-center justify-center">
+                    {user.profile_picture || editData.profile_picture ? (
+                      <img 
+                        src={editData.profile_picture || user.profile_picture}
+                        alt="Profil"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <UserIcon className="w-12 h-12 text-white/70" />
+                    )}
+                  </div>
+                  {isEditing && (
+                    <label className="absolute -bottom-2 -right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center cursor-pointer shadow-lg hover:shadow-xl transition-shadow">
+                      <Camera className="w-4 h-4 text-blue-600" />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => e.target.files[0] && handleImageUpload(e.target.files[0])}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
+                <div className="text-center md:text-left flex-1">
+                  <div className="flex items-center gap-4 mb-2">
+                    <h1 className="text-2xl md:text-3xl font-bold">
+                      {isEditing ? (
+                        <Input
+                          value={editData.full_name}
+                          onChange={(e) => setEditData(prev => ({ ...prev, full_name: e.target.value }))}
+                          className="bg-white/20 border-white/30 text-white placeholder-white/70"
+                          placeholder="Ditt namn"
+                        />
+                      ) : (
+                        user.full_name || "Okänd användare"
+                      )}
+                    </h1>
+                    {user.role === 'admin' && (
+                      <Badge className="bg-yellow-500 text-yellow-900">Admin</Badge>
+                    )}
+                  </div>
+                  <p className="text-blue-100 mb-4">{user.email}</p>
+                  
+                  {isEditing ? (
+                    <div className="space-y-3">
+                      <Textarea
+                        value={editData.bio}
+                        onChange={(e) => setEditData(prev => ({ ...prev, bio: e.target.value }))}
+                        placeholder="Berätta lite om dig själv..."
+                        className="bg-white/20 border-white/30 text-white placeholder-white/70"
+                        rows={2}
+                      />
+                      <div className="grid md:grid-cols-2 gap-3">
+                        <Input
+                          value={editData.location}
+                          onChange={(e) => setEditData(prev => ({ ...prev, location: e.target.value }))}
+                          placeholder="Din plats"
+                          className="bg-white/20 border-white/30 text-white placeholder-white/70"
+                        />
+                        <Input
+                          value={editData.interests}
+                          onChange={(e) => setEditData(prev => ({ ...prev, interests: e.target.value }))}
+                          placeholder="Dina intressen"
+                          className="bg-white/20 border-white/30 text-white placeholder-white/70"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {(user.bio || editData.bio) && (
+                        <p className="text-blue-100">{user.bio || editData.bio}</p>
+                      )}
+                      <div className="flex flex-wrap gap-4 text-sm">
+                        {(user.location || editData.location) && (
+                          <div className="flex items-center gap-1">
+                            <MapPin className="w-4 h-4" />
+                            <span>{user.location || editData.location}</span>
+                          </div>
+                        )}
+                        {(user.interests || editData.interests) && (
+                          <div className="flex items-center gap-1">
+                            <span>💡 {user.interests || editData.interests}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  {isEditing ? (
+                    <>
+                      <Button
+                        variant="secondary"
+                        onClick={() => setIsEditing(false)}
+                        disabled={isSaving}
+                      >
+                        Avbryt
+                      </Button>
+                      <Button
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className="bg-white text-blue-600 hover:bg-gray-100"
+                      >
+                        {isSaving ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                            Sparar...
+                          </>
+                        ) : (
+                          <>
+                            <Save className="w-4 h-4 mr-2" />
+                            Spara
+                          </>
+                        )}
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        variant="secondary"
+                        onClick={() => setIsEditing(true)}
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Redigera
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        onClick={handleLogout}
+                      >
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Logga ut
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Profile Content */}
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="overview">Översikt</TabsTrigger>
+            <TabsTrigger value="guides">Mina Guider ({myGuides.length})</TabsTrigger>
+            <TabsTrigger value="reviews">Recensioner ({myReviews.length})</TabsTrigger>
+            <TabsTrigger value="settings">Inställningar</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview">
+            <div className="grid md:grid-cols-3 gap-6">
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Headphones className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <h3 className="font-semibold text-lg mb-1">{myGuides.length}</h3>
+                  <p className="text-gray-600">Skapade guider</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <MessageSquare className="w-6 h-6 text-green-600" />
+                  </div>
+                  <h3 className="font-semibold text-lg mb-1">{myReviews.length}</h3>
+                  <p className="text-gray-600">Skrivna recensioner</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Award className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <h3 className="font-semibold text-lg mb-1">
+                    {myGuides.filter(g => g.verified).length}
+                  </h3>
+                  <p className="text-gray-600">Verifierade guider</p>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="guides">
+            <div className="space-y-4">
+              {myGuides.length > 0 ? (
+                myGuides.map(guide => (
+                  <Card key={guide.id}>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="font-semibold text-lg">{guide.name}</h3>
+                            {guide.verified && (
+                              <Badge className="bg-blue-100 text-blue-800">Verifierad</Badge>
+                            )}
+                          </div>
+                          <p className="text-gray-600 mb-2">{guide.expertise}</p>
+                          <div className="flex items-center gap-4 text-sm text-gray-500">
+                            <span>Personlighet: {guide.personality}</span>
+                            {guide.average_rating > 0 && (
+                              <div className="flex items-center gap-1">
+                                <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                                <span>{guide.average_rating.toFixed(1)}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <div className="text-center py-12">
+                  <Headphones className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Inga guider än</h3>
+                  <p className="text-gray-600">Skapa din första guide och dela din kunskap!</p>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="reviews">
+            <div className="space-y-4">
+              {myReviews.length > 0 ? (
+                myReviews.map(review => (
+                  <Card key={review.id}>
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          {[...Array(5)].map((_, i) => (
+                            <Star 
+                              key={i}
+                              className={`w-4 h-4 ${i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
+                            />
+                          ))}
+                        </div>
+                        <span className="text-sm text-gray-500">{review.date}</span>
+                      </div>
+                      {review.comment && (
+                        <p className="text-gray-700">{review.comment}</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <div className="text-center py-12">
+                  <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Inga recensioner än</h3>
+                  <p className="text-gray-600">Utforska guider och lämna din första recension!</p>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="w-5 h-5" />
+                  Kontoinställningar
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <Label>E-post</Label>
+                  <Input value={user.email} disabled className="bg-gray-50" />
+                  <p className="text-sm text-gray-600">E-postadressen kan inte ändras</p>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-2">
+                  <Label>Konto-ID</Label>
+                  <Input value={user.id} disabled className="bg-gray-50 font-mono text-sm" />
+                </div>
+
+                <Separator />
+
+                <div className="space-y-2">
+                  <Label>Medlemskap sedan</Label>
+                  <Input 
+                    value={new Date(user.created_date).toLocaleDateString('sv-SE')} 
+                    disabled 
+                    className="bg-gray-50" 
+                  />
+                </div>
+
+                <Separator />
+
+                <div className="space-y-2">
+                  <h3 className="text-md font-semibold text-gray-800">Juridiskt</h3>
+                   <Link to={createPageUrl("Policy")}>
+                     <Button variant="outline" className="w-full justify-start">
+                       Integritetspolicy
+                     </Button>
+                   </Link>
+                </div>
+
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}

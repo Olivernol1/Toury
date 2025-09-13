@@ -1,0 +1,47 @@
+{
+  "name": "Monument",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Namnet på monumentet"
+    },
+    "description": {
+      "type": "string",
+      "description": "Beskrivning av monumentet"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "URL till bild av monumentet"
+    },
+    "location": {
+      "type": "string",
+      "description": "Plats för monumentet"
+    },
+    "latitude": {
+      "type": "number",
+      "description": "GPS latitud"
+    },
+    "longitude": {
+      "type": "number",
+      "description": "GPS longitud"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "historisk",
+        "arkitektur",
+        "konst",
+        "naturlig",
+        "religiös",
+        "modern"
+      ],
+      "default": "historisk",
+      "description": "Kategori av monument"
+    }
+  },
+  "required": [
+    "name",
+    "description"
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "name": "Guide",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Guidens namn"
+    },
+    "profile_picture_url": {
+      "type": "string",
+      "description": "URL till profilbild"
+    },
+    "personality": {
+      "type": "string",
+      "enum": [
+        "rolig",
+        "akademisk",
+        "kortfattad",
+        "berättande",
+        "inspirerande",
+        "annan"
+      ],
+      "default": "berättande",
+      "description": "Guidens personlighetstyp"
+    },
+    "expertise": {
+      "type": "string",
+      "description": "Guidens expertområde (t.ex. historiker, PhD i konsthistoria)"
+    },
+    "verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Om guiden är verifierad expert"
+    },
+    "languages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Språk som guiden pratar"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Kort bio om guiden"
+    },
+    "audio_file_url": {
+      "type": "string",
+      "description": "URL till guidens ljudfil"
+    },
+    "monument_id": {
+      "type": "string",
+      "description": "ID för det monument guiden guidar"
+    },
+    "duration_minutes": {
+      "type": "number",
+      "description": "Längd på guidningen i minuter"
+    },
+    "average_rating": {
+      "type": "number",
+      "description": "Genomsnittligt betyg"
+    },
+    "total_reviews": {
+      "type": "number",
+      "default": 0,
+      "description": "Antal recensioner"
+    }
+  },
+  "required": [
+    "name",
+    "monument_id"
+  ]
+}

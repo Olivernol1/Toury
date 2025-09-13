@@ -1,0 +1,33 @@
+{
+  "name": "Review",
+  "type": "object",
+  "properties": {
+    "guide_id": {
+      "type": "string",
+      "description": "ID för guiden som recenseras"
+    },
+    "username": {
+      "type": "string",
+      "description": "Användarnamn för recensenten"
+    },
+    "rating": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "Betyg från 1-5 stjärnor"
+    },
+    "comment": {
+      "type": "string",
+      "description": "Kommentar från recensenten"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Datum för recensionen"
+    }
+  },
+  "required": [
+    "guide_id",
+    "rating"
+  ]
+}

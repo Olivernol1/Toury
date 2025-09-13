@@ -1,0 +1,94 @@
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, Shield } from 'lucide-react';
+
+export default function PolicyPage() {
+  const navigate = useNavigate();
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6 md:p-12">
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-8">
+          <Button variant="outline" onClick={() => navigate(-1)}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Tillbaka
+          </Button>
+        </div>
+
+        <Card className="bg-white/80 backdrop-blur-sm border-blue-100">
+          <CardHeader className="border-b">
+            <CardTitle className="flex items-center gap-3 text-2xl md:text-3xl text-gray-900">
+              <Shield className="w-8 h-8 text-blue-600" />
+              Integritetspolicy för Toury
+            </CardTitle>
+            <p className="text-gray-600 pt-2">Senast uppdaterad: 2024-10-27</p>
+          </CardHeader>
+          <CardContent className="p-6 md:p-8 space-y-6 text-gray-700 leading-relaxed">
+            <section>
+              <h2 className="text-xl font-semibold text-gray-800 mb-3">1. Introduktion</h2>
+              <p>
+                Välkommen till Toury ("appen", "vi", "oss"). Vi värnar om din integritet och strävar efter att skydda dina personuppgifter på bästa sätt. Denna integritetspolicy förklarar vilken typ av information vi samlar in, varför vi samlar in den, och hur den används och skyddas.
+              </p>
+            </section>
+            
+            <section>
+              <h2 className="text-xl font-semibold text-gray-800 mb-3">2. Information vi samlar in</h2>
+              <p className="mb-2">Vi samlar in följande typer av information:</p>
+              <ul className="list-disc list-inside space-y-2 pl-4">
+                <li>
+                  <strong>Personlig information du ger oss:</strong> När du skapar ett konto samlar vi in ditt namn och din e-postadress. Om du väljer att bli en guide kan du även ladda upp en profilbild, bio, och verifieringsdokument.
+                </li>
+                <li>
+                  <strong>Användningsdata:</strong> Vi samlar in information om hur du använder appen, såsom vilka monument du besöker och vilka guider du lyssnar på.
+                </li>
+                <li>
+                  <strong>Platsdata:</strong> Med ditt medgivande kan vi samla in information om din GPS-position för att visa monument nära dig. Du kan när som helst stänga av platstjänster i din enhets inställningar.
+                </li>
+                <li>
+                  <strong>Ljud- och bildfiler:</strong> Guider laddar upp ljudfiler (guidningar) och profilbilder. Dessa lagras säkert på våra servrar.
+                </li>
+              </ul>
+            </section>
+            
+            <section>
+              <h2 className="text-xl font-semibold text-gray-800 mb-3">3. Hur vi använder din information</h2>
+              <p className="mb-2">Vi använder den insamlade informationen för att:</p>
+              <ul className="list-disc list-inside space-y-2 pl-4">
+                <li>Tillhandahålla, underhålla och förbättra vår app.</li>
+                <li>Personifiera din upplevelse genom att rekommendera guider och monument.</li>
+                <li>Möjliggöra kommunikation mellan användare (t.ex. via recensioner).</li>
+                <li>Hantera ditt konto och ge dig kundsupport.</li>
+                <li>Visa relevanta monument baserat på din plats.</li>
+                <li>Verifiera guiders expertis om de väljer att ladda upp dokument.</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-semibold text-gray-800 mb-3">4. Delning av information</h2>
+              <p>
+                Vi säljer aldrig dina personuppgifter till tredje part. Information som ditt namn (om du skriver en recension) och din profil (om du är guide) är synlig för andra användare. Anonymiserad och aggregerad data kan användas för statistik och analys.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-semibold text-gray-800 mb-3">5. Dina rättigheter</h2>
+              <p>
+                Du har rätt att begära tillgång till, korrigera eller radera dina personuppgifter. Du kan hantera mycket av din information direkt via din profilsida i appen. För ytterligare frågor, vänligen kontakta oss.
+              </p>
+            </section>
+            
+            <section>
+              <h2 className="text-xl font-semibold text-gray-800 mb-3">6. Kontakt</h2>
+              <p>
+                Om du har några frågor om denna integritetspolicy, vänligen kontakta oss på <a href="mailto:policy@toury.app" className="text-blue-600 hover:underline">policy@toury.app</a>.
+              </p>
+            </section>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}

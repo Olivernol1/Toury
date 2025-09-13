@@ -1,0 +1,236 @@
+import React from "react";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { 
+  Compass, 
+  MapPin, 
+  Headphones, 
+  Star, 
+  ArrowRight,
+  Globe,
+  Users,
+  Award
+} from "lucide-react";
+import { motion } from "framer-motion";
+
+export default function Hem() {
+  const features = [
+    {
+      icon: Globe,
+      title: "Världens Monument",
+      description: "Upptäck fantastiska monument från hela världen med lokala experter",
+      color: "from-blue-500 to-cyan-500"
+    },
+    {
+      icon: Users,
+      title: "Personliga Guider",
+      description: "Välj mellan historiker, lokala experter och underhållande berättare",
+      color: "from-purple-500 to-pink-500"
+    },
+    {
+      icon: Award,
+      title: "Verifierade Experter",
+      description: "Lyssna på certifierade guider med bevisad kunskap och expertis",
+      color: "from-amber-500 to-orange-500"
+    }
+  ];
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        delayChildren: 0.1,
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100
+      }
+    }
+  };
+
+  return (
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        className="relative px-6 py-12 md:px-12 md:py-20"
+      >
+        <div className="max-w-4xl mx-auto text-center">
+          <motion.div 
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+            className="mb-8"
+          >
+            <div className="inline-flex items-center gap-3 bg-white/80 backdrop-blur-md px-6 py-3 rounded-full border border-blue-200 shadow-lg">
+              <Compass className="w-8 h-8 text-blue-600" />
+              <span className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+                Toury
+              </span>
+            </div>
+          </motion.div>
+
+          <motion.h1 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+            className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight"
+          >
+            Välj din guide,{" "}
+            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              upplev monumentet
+            </span>{" "}
+            på ditt sätt
+          </motion.h1>
+
+          <motion.p 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.6, duration: 0.6 }}
+            className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed"
+          >
+            Upptäck världens mest fascinerande monument med personliga ljudguider från historiker, lokala experter och inspirerande berättare.
+          </motion.p>
+
+          <motion.div 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.8, duration: 0.6 }}
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+          >
+            <Link to={createPageUrl("Monument")}>
+              <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-6 text-lg font-semibold rounded-2xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 w-full sm:w-auto">
+                <MapPin className="w-6 h-6 mr-3" />
+                Upptäck monument nära dig
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </Link>
+            
+            <Button 
+              variant="outline" 
+              className="border-2 border-blue-200 hover:border-blue-300 text-blue-700 hover:bg-blue-50 px-8 py-6 text-lg font-semibold rounded-2xl w-full sm:w-auto transition-all duration-300"
+            >
+              <Headphones className="w-6 h-6 mr-3" />
+              Se exempel
+            </Button>
+          </motion.div>
+        </div>
+
+        {/* Floating Elements */}
+        <motion.div 
+          animate={{ 
+            y: [0, -10, 0],
+            rotate: [0, 5, 0]
+          }}
+          transition={{ 
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="absolute top-20 right-10 hidden lg:block"
+        >
+          <div className="w-20 h-20 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-3xl opacity-20"></div>
+        </motion.div>
+
+        <motion.div 
+          animate={{ 
+            y: [0, 15, 0],
+            rotate: [0, -5, 0]
+          }}
+          transition={{ 
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="absolute bottom-20 left-10 hidden lg:block"
+        >
+          <div className="w-16 h-16 bg-gradient-to-r from-purple-400 to-pink-400 rounded-2xl opacity-20"></div>
+        </motion.div>
+      </motion.div>
+
+      {/* Features Section */}
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="px-6 py-16 md:px-12"
+      >
+        <div className="max-w-6xl mx-auto">
+          <motion.div variants={itemVariants} className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Varför välja Toury?
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Få en unik och personlig upplevelse istället för standardiserade audioguider
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {features.map((feature, index) => (
+              <motion.div key={index} variants={itemVariants}>
+                <Card className="group hover:shadow-2xl transition-all duration-500 border-0 bg-white/80 backdrop-blur-sm hover:bg-white hover:scale-105">
+                  <CardContent className="p-8 text-center">
+                    <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-r ${feature.color} mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                      <feature.icon className="w-8 h-8 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-4">
+                      {feature.title}
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed">
+                      {feature.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </motion.div>
+
+      {/* CTA Section */}
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.2, duration: 0.8 }}
+        className="px-6 py-16 md:px-12"
+      >
+        <div className="max-w-4xl mx-auto">
+          <Card className="bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700 border-0 shadow-2xl overflow-hidden">
+            <CardContent className="p-12 text-center text-white relative">
+              <div className="absolute inset-0 bg-black/10"></div>
+              <div className="relative z-10">
+                <Star className="w-12 h-12 mx-auto mb-6 text-yellow-300" />
+                <h3 className="text-2xl md:text-3xl font-bold mb-4">
+                  Är du expert på ett monument?
+                </h3>
+                <p className="text-xl mb-8 opacity-90">
+                  Dela din kunskap med resenärer från hela världen och tjäna pengar på dina guider.
+                </p>
+                <Link to={createPageUrl("LaddaUppGuide")}>
+                  <Button className="bg-white text-blue-700 hover:bg-gray-100 px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                    Bli guide idag
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </motion.div>
+    </div>
+  );
+}

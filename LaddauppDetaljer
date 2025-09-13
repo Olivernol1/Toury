@@ -1,0 +1,468 @@
+import React, { useState, useEffect, useRef } from "react";
+import { Guide } from "@/entities/Guide";
+import { Monument } from "@/entities/Monument";
+import { UploadFile } from "@/integrations/Core";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { 
+  Upload, 
+  Mic, 
+  Camera, 
+  FileAudio,
+  Award,
+  Globe,
+  User,
+  MapPin,
+  CheckCircle
+} from "lucide-react";
+import { motion } from "framer-motion";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+
+export default function LaddaUppGuide() {
+  const [monuments, setMonuments] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
+  const fileInputRef = useRef(null);
+  const profileImageRef = useRef(null);
+  const certificationRef = useRef(null);
+
+  const [formData, setFormData] = useState({
+    name: "",
+    monument_id: "",
+    personality: "",
+    expertise: "",
+    bio: "",
+    languages: [],
+    duration_minutes: "",
+    verified: false
+  });
+
+  const [files, setFiles] = useState({
+    profile_picture: null,
+    audio_file: null,
+    certification: null
+  });
+
+  useEffect(() => {
+    loadMonuments();
+  }, []);
+
+  const loadMonuments = async () => {
+    try {
+      const data = await Monument.list();
+      setMonuments(data);
+    } catch (error) {
+      console.error("Error loading monuments:", error);
+    }
+  };
+
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleLanguageChange = (language, checked) => {
+    setFormData(prev => ({
+      ...prev,
+      languages: checked 
+        ? [...prev.languages, language]
+        : prev.languages.filter(l => l !== language)
+    }));
+  };
+
+  const handleFileChange = (type, file) => {
+    setFiles(prev => ({
+      ...prev,
+      [type]: file
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError("");
+
+    try {
+      // Upload files
+      let profile_picture_url = "";
+      let audio_file_url = "";
+      
+      if (files.profile_picture) {
+        const { file_url } = await UploadFile({ file: files.profile_picture });
+        profile_picture_url = file_url;
+      }
+
+      if (files.audio_file) {
+        const { file_url } = await UploadFile({ file: files.audio_file });
+        audio_file_url = file_url;
+      }
+
+      // Check if certification was uploaded
+      const hasVerification = files.certification !== null;
+
+      // Create guide
+      await Guide.create({
+        ...formData,
+        profile_picture_url,
+        audio_file_url,
+        verified: hasVerification,
+        duration_minutes: parseInt(formData.duration_minutes) || 0,
+        average_rating: 0,
+        total_reviews: 0
+      });
+
+      setSuccess(true);
+      
+      // Reset form
+      setFormData({
+        name: "",
+        monument_id: "",
+        personality: "",
+        expertise: "",
+        bio: "",
+        languages: [],
+        duration_minutes: "",
+        verified: false
+      });
+      setFiles({
+        profile_picture: null,
+        audio_file: null,
+        certification: null
+      });
+      
+    } catch (error) {
+      setError("Ett fel uppstod när guiden skulle sparas. Försök igen.");
+      console.error("Error creating guide:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const languages = ["Svenska", "Engelska", "Tyska", "Franska", "Spanska", "Italienska"];
+  const personalities = [
+    { value: "rolig", label: "Rolig & Underhållande" },
+    { value: "akademisk", label: "Akademisk & Detaljerad" },
+    { value: "kortfattad", label: "Kort & Koncis" },
+    { value: "berättande", label: "Berättande & Dramatisk" },
+    { value: "inspirerande", label: "Inspirerande & Motiverande" },
+    { value: "annan", label: "Annan stil" }
+  ];
+
+  if (success) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="max-w-md w-full"
+        >
+          <Card className="text-center border-green-200 shadow-2xl">
+            <CardContent className="p-8">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="w-8 h-8 text-green-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Guide skapad!</h2>
+              <p className="text-gray-600 mb-6">
+                Din guide har laddats upp och väntar på att upptäckas av resenärer.
+              </p>
+              <Button 
+                onClick={() => setSuccess(false)}
+                className="bg-gradient-to-r from-green-600 to-green-700"
+              >
+                Skapa fler guider
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen p-6 md:p-12">
+      <div className="max-w-4xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Skapa din <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Guide</span>
+          </h1>
+          <p className="text-lg text-gray-600">
+            Dela din kunskap och passion med resenärer från hela världen
+          </p>
+        </motion.div>
+
+        {error && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-6">
+            {/* Personal Info */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Card className="bg-white/80 backdrop-blur-sm border-blue-100">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <User className="w-5 h-5 text-blue-600" />
+                    Personlig information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="name">Ditt namn *</Label>
+                      <Input
+                        id="name"
+                        value={formData.name}
+                        onChange={(e) => handleInputChange('name', e.target.value)}
+                        placeholder="Ange ditt fullständiga namn"
+                        required
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="expertise">Din expertis *</Label>
+                      <Input
+                        id="expertise"
+                        value={formData.expertise}
+                        onChange={(e) => handleInputChange('expertise', e.target.value)}
+                        placeholder="t.ex. Historiker, PhD i konsthistoria"
+                        required
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="bio">Kort bio</Label>
+                    <Textarea
+                      id="bio"
+                      value={formData.bio}
+                      onChange={(e) => handleInputChange('bio', e.target.value)}
+                      placeholder="Berätta kort om dig själv och din guidestil..."
+                      rows={3}
+                      className="mt-1"
+                    />
+                  </div>
+
+                  <div>
+                    <Label>Profilbild</Label>
+                    <input
+                      ref={profileImageRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileChange('profile_picture', e.target.files[0])}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => profileImageRef.current?.click()}
+                      className="w-full mt-1 border-dashed border-2"
+                    >
+                      <Camera className="w-4 h-4 mr-2" />
+                      {files.profile_picture ? files.profile_picture.name : "Ladda upp profilbild"}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Guide Details */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Card className="bg-white/80 backdrop-blur-sm border-blue-100">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <MapPin className="w-5 h-5 text-blue-600" />
+                    Guide-detaljer
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="monument">Monument *</Label>
+                      <Select 
+                        value={formData.monument_id} 
+                        onValueChange={(value) => handleInputChange('monument_id', value)}
+                      >
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Välj monument" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {monuments.map((monument) => (
+                            <SelectItem key={monument.id} value={monument.id}>
+                              {monument.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="personality">Personlighet *</Label>
+                      <Select 
+                        value={formData.personality} 
+                        onValueChange={(value) => handleInputChange('personality', value)}
+                      >
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Välj din stil" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {personalities.map((personality) => (
+                            <SelectItem key={personality.value} value={personality.value}>
+                              {personality.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="duration">Längd (minuter)</Label>
+                    <Input
+                      id="duration"
+                      type="number"
+                      value={formData.duration_minutes}
+                      onChange={(e) => handleInputChange('duration_minutes', e.target.value)}
+                      placeholder="t.ex. 15"
+                      className="mt-1"
+                    />
+                  </div>
+
+                  <div>
+                    <Label>Språk du guidar på</Label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                      {languages.map((language) => (
+                        <div key={language} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={language}
+                            checked={formData.languages.includes(language)}
+                            onCheckedChange={(checked) => handleLanguageChange(language, checked)}
+                          />
+                          <Label htmlFor={language} className="text-sm font-normal">
+                            {language}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Files */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <Card className="bg-white/80 backdrop-blur-sm border-blue-100">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <Upload className="w-5 h-5 text-blue-600" />
+                    Filer
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label>Ljudfil med din guide *</Label>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="audio/*"
+                      onChange={(e) => handleFileChange('audio_file', e.target.files[0])}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full mt-1 border-dashed border-2"
+                    >
+                      <FileAudio className="w-4 h-4 mr-2" />
+                      {files.audio_file ? files.audio_file.name : "Ladda upp ljudfil"}
+                    </Button>
+                  </div>
+
+                  <div>
+                    <Label>Certifikat/Bevis (för verifiering)</Label>
+                    <input
+                      ref={certificationRef}
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={(e) => handleFileChange('certification', e.target.files[0])}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => certificationRef.current?.click()}
+                      className="w-full mt-1 border-dashed border-2"
+                    >
+                      <Award className="w-4 h-4 mr-2" />
+                      {files.certification ? files.certification.name : "Ladda upp certifikat (valfritt)"}
+                    </Button>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Ladda upp diplom, certifikat eller andra bevis på din expertis för att få "Verifierad"-badge
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Submit Button */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <Button
+                type="submit"
+                disabled={isSubmitting || !formData.name || !formData.monument_id || !formData.personality || !files.audio_file}
+                className="w-full py-6 text-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-xl shadow-xl"
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    Skapar guide...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-5 h-5 mr-2" />
+                    Skapa guide
+                  </>
+                )}
+              </Button>
+            </motion.div>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
